@@ -14,10 +14,8 @@ def BFS(region,i,j,marked,limit):
         if convex['y1'] >= j: convex['y1'] = j
         if convex['y2'] <= j: convex['y2'] = j
 
-        adjacent = set([(i,max([j-2,limit['yMin']])),(min([i+2,limit['xMax']]),j),
-                        (i,min([j+2,limit['yMax']])),(max([i-2,limit['xMin']]),j)])
-        if (i,j) in adjacent:
-            adjacent.remove((i,j))
+        adjacent = [(i,max([j-2,limit['yMin']])),(min([i+2,limit['xMax']]),j),
+                    (i,min([j+2,limit['yMax']])),(max([i-2,limit['xMin']]),j)]
         for ad in adjacent:
             if marked[ad[0]-region.x][ad[1]-region.y]:
                 continue
