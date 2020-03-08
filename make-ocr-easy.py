@@ -8,8 +8,6 @@ def BFS(region,i,j,marked,limit):
     queue.append((i,j))
     marked[i-region.x][j-region.y] = True
     while queue:
-        # if count%10000 == 0:
-        #     pdb.gimp_message("Filling: %d%%"%round((float(count)/total)*100))
         i,j = queue.pop()
         if convex['x1'] >= i: convex['x1'] = i
         if convex['x2'] <= i: convex['x2'] = i
@@ -48,7 +46,7 @@ def search(region):
 
 def make_ocr_easy(*args):
     for image in gimp.image_list():
-        dirTuple = os.path.split(image.filename)
+        dirTuple = os.path.split(image.filename.decode("utf-8")
         path,name = dirTuple[0],"text_"+os.path.splitext(dirTuple[1])[0]+".png"
         drawable = image.layers[-1]
 
