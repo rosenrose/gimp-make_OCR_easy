@@ -46,8 +46,8 @@ def search(region):
 
 def make_ocr_easy(*args):
     for image in gimp.image_list():
-        dirTuple = os.path.split(image.filename.decode("utf-8"))
-        path,name = dirTuple[0],"text_"+os.path.splitext(dirTuple[1])[0]+".png"
+        path,name = os.path.split(image.filename.decode("utf-8"))
+	name = "text_%s.png"%(os.path.splitext(name)[0])
         drawable = image.layers[-1]
 
         pdb.gimp_selection_flood(image)
