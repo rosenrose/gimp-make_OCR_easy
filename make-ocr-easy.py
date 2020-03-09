@@ -45,17 +45,26 @@ def turn(direction,rotate):     # rotate meaning: -1 left, 1 right
 def move(pos,direction):
     return pos[0]+direction[0],pos[1]+direction[1]
 
+def contour_add(contour,pos):
+    contour['poses'].add(pos)
+    x,y = pos
+    if contour['x1'] >= x: contour['x1'] = x
+    if contour['x2'] <= x: contour['x2'] = x
+    if contour['y1'] >= y: contour['y1'] = y
+    if contour['y2'] <= y: contour['y2'] = y
+    return contour
+
 # Theo Pavlidis' Algorithm
 # http://www.imageprocessingplace.com/downloads_V3/root_downloads/tutorials/contour_tracing_Abeer_George_Ghuneim/theo.html
 def Theo_Pavlidis_algorithm(region,start):
-    limit = {'x': [region.x, region.x+region.w-1], 'y': [region.y, region.y+region.h-1]}
     debug = False
-    contour = set()
+    limit = {'x': [region.x, region.x+region.w-1], 'y': [region.y, region.y+region.h-1]}
+    contour = {'poses': set(), 'x1': limit['x'][1], 'x2': limit['x'][0], 'y1': limit['y'][1], 'y2': limit['y'][0]}
     pos = start
     initDirection = 0,-1    # meaning upward
     direction = initDirection
 
-    contour.add(pos)
+    contour = contour_add(contour,pos)
     step = 1
     while True:
         if step == 1:
@@ -69,12 +78,12 @@ def Theo_Pavlidis_algorithm(region,start):
                 direction = turn(direction,-1)  
             elif step == 3:
                 pos = move(pos,direction)
-                contour.add(pos)
+                contour = contour_add(contour,pos)
                 step = 0
             step+=1
         elif a2 != '\x00':
             pos = move(pos,direction)
-            contour.add(pos)
+            contour = contour_add(contour,pos)
         elif a3 != '\x00':
             if step == 1:
                 direction = turn(direction,1)
@@ -84,19 +93,20 @@ def Theo_Pavlidis_algorithm(region,start):
                 direction = turn(direction,-1)
             elif step == 4:
                 pos = move(pos,direction)
-                contour.add(pos)
+                contour = contour_add(contour,pos)
                 step = 0
             step+=1
         else:
             direction = turn(direction,1)
+
         if pos == start and direction == initDirection:
             break
     return contour
 
 def search(region):
     debug = False
-    contourBounds = []
-    checkList = []
+    contourList = []
+    checkList = set()
     for i in range(region.x, region.x+region.w, 70):    # Lower the steps, more small areas can be catched. But increases execution time.
         for j in range(region.y, region.y+region.h, 100):
             if region[i,j] != '\x00':
@@ -106,12 +116,11 @@ def search(region):
                 if (leftNearest,j) in checkList:
                     continue
                 if debug: pdb.gimp_message((leftNearest,j))
-                contour = Theo_Pavlidis_algorithm(region,(leftNearest,j))                
-                bound = {'x1': min([x for x,y in contour]), 'x2': max([x for x,y in contour]),
-                        'y1': min([y for x,y in contour]), 'y2': max([y for x,y in contour])}
-                contourBounds.append(bound)
-                checkList += list(contour)
-    return contourBounds
+                
+                contour = Theo_Pavlidis_algorithm(region,(leftNearest,j))
+                contourList.append(contour)
+                checkList |= contour['poses']
+    return contourList
 
 def make_ocr_easy(*args):
     for image in gimp.image_list():
@@ -127,10 +136,10 @@ def make_ocr_easy(*args):
         selection = pdb.gimp_image_get_selection(image)
         non_empty, x1, y1, x2, y2 = pdb.gimp_selection_bounds(image)
         region = selection.get_pixel_rgn(x1,y1,x2-x1+1,y2-y1+1)
-        contourBounds = search(region)
+        contourList = search(region)
 
-        for bound in contourBounds:
-            pdb.gimp_image_select_rectangle(image, 0, bound['x1'], bound['y1'], bound['x2']-bound['x1'], bound['y2']-bound['y1'])
+        for contour in contourList:
+            pdb.gimp_image_select_rectangle(image, 0, contour['x1'], contour['y1'], contour['x2']-contour['x1'], contour['y2']-contour['y1'])
         pdb.gimp_drawable_edit_fill(drawable, 2)
         pdb.gimp_selection_none(image)
         pdb.gimp_drawable_update(drawable, x1, y1, x2-x1, y2-y1)
