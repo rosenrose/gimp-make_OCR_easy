@@ -101,7 +101,7 @@ def search(region):
         for j in range(region.y, region.y+region.h, 100):
             if region[i,j] != '\x00':
                 leftNearest = i
-                while leftNearest > 0 and region[leftNearest-1,j] != '\x00':
+                while leftNearest > region.x and region[leftNearest-1,j] != '\x00':
                     leftNearest-=1
                 if (leftNearest,j) in checkList:
                     continue
