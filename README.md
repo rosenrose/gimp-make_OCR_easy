@@ -4,7 +4,9 @@ Fills out rectangular area surrounding speech lines. Which makes it easier drawi
 Usage: Click each bubbles with Fuzzy Select Tool. Then run the script.
 
 Notice: It will take time within 10 seconds for each image.
-<br/><br/>
+
+Bad example:
 ![bad](https://raw.githubusercontent.com/rosenrose/gimp-cutSpeechBubble/master/pic1.png)
-<br/><br/>
+
+Good example after processing:
 ![good](https://raw.githubusercontent.com/rosenrose/gimp-cutSpeechBubble/master/pic2.png)
