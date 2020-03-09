@@ -2,13 +2,39 @@
 from gimpfu import *
 import os
 
-def get_adjacent(region,pos,direction):
+def is_over_limit(val,axis,limit):
+    return val < limit[axis][0] or val > limit[axis][1]
+
+def get_adjacent(region,pos,direction,limit):
     x,y = pos
     offsetX,offsetY = direction
     if offsetX == 0:
-        return region[x+offsetY,y+offsetY], region[x,y+offsetY], region[x+offsetY*-1,y+offsetY]
+        if is_over_limit(y+offsetY,'y',limit):
+            a1,a2,a3 = '\x00','\x00','\x00'
+        else:
+            if is_over_limit(x+offsetY,'x',limit):
+                a1 = '\x00'
+            else:
+                a1 = region[x+offsetY,y+offsetY]
+            if is_over_limit(x+offsetY*-1,'x',limit):
+                a3 = '\x00'
+            else:
+                a3 = region[x+offsetY*-1,y+offsetY]
+            a2 = region[x,y+offsetY]
     elif offsetY == 0:
-        return region[x+offsetX,y+offsetX*-1], region[x+offsetX,y], region[x+offsetX,y+offsetX]
+        if is_over_limit(x+offsetX,'x',limit):
+            a1,a2,a3 = '\x00','\x00','\x00'
+        else:
+            if is_over_limit(y+offsetX*-1,'y',limit):
+                a1 = '\x00'
+            else:
+                a1 = region[x+offsetX,y+offsetX*-1]
+            if is_over_limit(y+offsetX,'y',limit):
+                a3 = '\x00'
+            else:
+                a3 = region[x+offsetX,y+offsetX]
+            a2 = region[x+offsetX,y]
+    return a1,a2,a3
 
 def turn(direction,rotate):     # rotate meaning: -1 left, 1 right
     if direction[0] == 0:
@@ -22,6 +48,7 @@ def move(pos,direction):
 # Theo Pavlidis' Algorithm
 # http://www.imageprocessingplace.com/downloads_V3/root_downloads/tutorials/contour_tracing_Abeer_George_Ghuneim/theo.html
 def Theo_Pavlidis_algorithm(region,start):
+    limit = {'x': [region.x, region.x+region.w-1], 'y': [region.y, region.y+region.h-1]}
     debug = False
     contour = set()
     pos = start
@@ -32,7 +59,7 @@ def Theo_Pavlidis_algorithm(region,start):
     step = 1
     while True:
         if step == 1:
-            a1,a2,a3 = get_adjacent(region,pos,direction)
+            a1,a2,a3 = get_adjacent(region,pos,direction,limit)
         if debug: pdb.gimp_message((pos,direction,(a1,a2,a3)))
 
         if a1 != '\x00':
@@ -74,7 +101,7 @@ def search(region):
         for j in range(region.y, region.y+region.h, 100):
             if region[i,j] != '\x00':
                 leftNearest = i
-                while region[leftNearest-1,j] != '\x00':
+                while leftNearest > 0 and region[leftNearest-1,j] != '\x00':
                     leftNearest-=1
                 if (leftNearest,j) in checkList:
                     continue
@@ -99,7 +126,7 @@ def make_ocr_easy(*args):
         pdb.gimp_selection_grow(image, 1)
         selection = pdb.gimp_image_get_selection(image)
         non_empty, x1, y1, x2, y2 = pdb.gimp_selection_bounds(image)
-        region = selection.get_pixel_rgn(x1-1,y1-1,x2-x1+2,y2-y1+2)     # Additional zero-filled edges needed for algorithm
+        region = selection.get_pixel_rgn(x1,y1,x2-x1+1,y2-y1+1)
         contourBounds = search(region)
 
         for bound in contourBounds:
