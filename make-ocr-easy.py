@@ -16,10 +16,8 @@ def turn(direction,rotate):     # rotate meaning: -1 left, 1 right
     elif direction[1] == 0:
         return 0, direction[0]*rotate
 
-def move(pos,direction,contour):
-    x,y = pos[0]+direction[0],pos[1]+direction[1]
-    contour.add((x,y))
-    return (x,y),contour
+def move(pos,direction):
+    return pos[0]+direction[0],pos[1]+direction[1]
 
 # Theo Pavlidis' Algorithm
 # http://www.imageprocessingplace.com/downloads_V3/root_downloads/tutorials/contour_tracing_Abeer_George_Ghuneim/theo.html
@@ -39,24 +37,27 @@ def Theo_Pavlidis_algorithm(region,start):
 
         if a1 != '\x00':
             if step == 1:   # To check break condition efficiently, take only 1 step for each iteration
-                pos,contour = move(pos,direction,contour)
+                pos = move(pos,direction)
             elif step == 2:
                 direction = turn(direction,-1)  
             elif step == 3:
-                pos,contour = move(pos,direction,contour)
+                pos = move(pos,direction)
+                contour.add(pos)
                 step = 0
             step+=1
         elif a2 != '\x00':
-            pos,contour = move(pos,direction,contour)
+            pos = move(pos,direction)
+            contour.add(pos)
         elif a3 != '\x00':
             if step == 1:
                 direction = turn(direction,1)
             elif step == 2:
-                pos,contour = move(pos,direction,contour)
+                pos = move(pos,direction)
             elif step == 3:
                 direction = turn(direction,-1)
             elif step == 4:
-                pos,contour = move(pos,direction,contour)
+                pos = move(pos,direction)
+                contour.add(pos)
                 step = 0
             step+=1
         else:
