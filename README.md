@@ -5,13 +5,14 @@ Usage: Click each bubbles with Fuzzy Select Tool. Then run the script.
 
 Notice: It will take time within 10 seconds for each image.
 
-
+&nbsp;  
 Bad example:
 
+&nbsp;  
 ![bad](https://raw.githubusercontent.com/rosenrose/gimp-cutSpeechBubble/master/pic1.png)
 
-&nbsp;
+&nbsp;  
 Good example after processing:
 
-&nbsp;
+&nbsp;  
 ![good](https://raw.githubusercontent.com/rosenrose/gimp-cutSpeechBubble/master/pic2.png)
