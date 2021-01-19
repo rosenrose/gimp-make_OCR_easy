@@ -1,4 +1,4 @@
-# gimp-cutSpeechBubble
+# gimp-make_OCR_easy
 Fills out rectangular area surrounding speech lines. Which makes it easier drawing text recognition area for OCR software.
 
 Usage: Click each bubbles with Fuzzy Select Tool. Then run the script.
